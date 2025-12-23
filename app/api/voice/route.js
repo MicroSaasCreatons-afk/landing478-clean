@@ -6,31 +6,41 @@ const supabase = createClient(
 );
 
 export async function POST(request) {
-  // Parse form data (Twilio sends form-urlencoded)
+  // Parse form data
   const formData = await request.formData();
   const CallSid = formData.get('CallSid');
   const From = formData.get('From');
-  const To = formData.get('To');
+  
+  console.log('📞 Incoming call:', { CallSid, From });
+  
+  try {
+    // Test Supabase connection
+    const { data, error } = await supabase
+      .from('inbound_demo_calls')
+      .insert({
+        call_sid: CallSid,
+        phone_number: From,
+        line_called: '478-demo'
+      })
+      .select();
+    
+    if (error) {
+      console.error('❌ Supabase error:', error.message);
+    } else {
+      console.log('✅ Call logged to Supabase:', data);
+    }
+  } catch (error) {
+    console.error('❌ Unexpected error:', error);
+  }
 
-  // Log incoming call
-  await supabase.from('inbound_demo_calls').insert({
-    call_sid: CallSid,
-    phone_number: From,
-    line_called: '478-demo'
-  });
-
-  // Return TwiML response
+  // Return TwiML response (always return this even if Supabase fails)
   const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Say voice="Polly.Matthew">
-    Hi! You've reached MicroSaaS Creations demo line. 
-    I'm Alex, your AI sales representative. 
-    I'm here to show you what your business could have - 
-    an AI that handles calls 24/7, books appointments, 
-    and never misses a lead. 
-    What industry are you in?
+    Hi! You've reached MicroSaaS Creations demo line.
+    Test call logged successfully.
   </Say>
-  <Record maxLength="30" action="/api/voice-process" />
+  <Hangup/>
 </Response>`;
 
   return new Response(twiml, {
@@ -38,3 +48,5 @@ export async function POST(request) {
     headers: { 'Content-Type': 'text/xml' }
   });
 }
+  
+  
