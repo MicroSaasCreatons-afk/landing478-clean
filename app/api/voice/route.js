@@ -1,10 +1,19 @@
 export async function POST(request) {
-  console.log('📞 POST: 478 call');
+  console.log('📞 478 call received at:', new Date().toISOString());
+  
+  const formData = await request.formData();
+  const From = formData.get('From');
+  console.log('Call from:', From);
   
   const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Say voice="alice">
-    Thanks for calling MicroSaaS Creations. Testing voice system.
+    Thanks for calling MicroSaaS Creations. This is our automated voice attendant. 
+    We help businesses automate cold calling. For a demo, visit microsaas.com.
+  </Say>
+  <Pause length="1"/>
+  <Say>
+    I'll text you a trial link now. Check your phone.
   </Say>
   <Hangup/>
 </Response>`;
@@ -15,24 +24,6 @@ export async function POST(request) {
   });
 }
 
-export async function GET(request) {
-  console.log('🔊 GET request received');
-  
-  // Check for WebSocket upgrade
-  const upgrade = request.headers.get('upgrade');
-  
-  if (upgrade === 'websocket') {
-    console.log('✅ WebSocket upgrade requested');
-    // For now, return 101 but without actual WebSocket
-    return new Response(null, {
-      status: 101,
-      headers: {
-        'Upgrade': 'websocket',
-        'Connection': 'Upgrade'
-      }
-    });
-  }
-  
-  console.log('⚠️ Regular GET request');
-  return new Response('Voice endpoint - use POST for calls', { status: 200 });
+export async function GET() {
+  return new Response('Voice endpoint ready', { status: 200 });
 }
